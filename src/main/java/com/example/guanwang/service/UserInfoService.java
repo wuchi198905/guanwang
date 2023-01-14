@@ -1,5 +1,6 @@
 package com.example.guanwang.service;
 
+import com.example.guanwang.bean.LoginUser;
 import com.example.guanwang.bean.UserInfo;
 import com.baomidou.mybatisplus.service.IService;
 
@@ -13,4 +14,5 @@ import com.baomidou.mybatisplus.service.IService;
  */
 public interface UserInfoService extends IService<UserInfo> {
 
+    LoginUser login(UserInfo memberInfo);
 }

@@ -1,10 +1,20 @@
 package com.example.guanwang.service.impl;
 
+import com.example.guanwang.Utils.RedisUtils;
+import com.example.guanwang.base.util.JwtUtil;
+import com.example.guanwang.base.util.MD5;
+import com.example.guanwang.bean.LoginUser;
 import com.example.guanwang.bean.UserInfo;
 import com.example.guanwang.mapper.UserInfoMapper;
 import com.example.guanwang.service.UserInfoService;
 import com.baomidou.mybatisplus.service.impl.ServiceImpl;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * <p>
@@ -16,5 +26,48 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> implements UserInfoService {
+    @Autowired
+    private UserInfoMapper userInfoMapper;
+    @Autowired
+    private RedisUtils redisUtils;
+    @Override
+    public LoginUser login(UserInfo user) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("username", user.getUsername());
 
+
+        UserInfo user1 = null;
+        LoginUser loginUser=new LoginUser();
+        try {
+
+            List<UserInfo> userList = userInfoMapper.selectByMap(map);
+            if (userList == null || userList.size() <= 0){
+                loginUser.setLogin(false);
+                return loginUser;
+            }
+
+            if (StringUtils.equals(user.getState(), "L"))
+                if (userList == null || userList.size() <= 0){
+                    loginUser.setLogin(false);
+                    return loginUser;
+                }
+
+            user1=userList.get(0);
+            // 校验用户名密码
+            String encrypt = MD5.toMD5(user.getPassword() + user.getSalt());
+            if (!StringUtils.equalsIgnoreCase(encrypt, user.getPassword())) {
+                loginUser.setStade(false);
+            }
+        } catch (Exception e) {
+           // throw new MyException("该用户名或者密码错误,请检查后再登录!");
+        }
+
+        //根据电话号码和密码加密生成token
+        loginUser.setUserInfo(user1);
+        String token = JwtUtil.sign(user1.getUsername(), user1.getPassword());
+        redisUtils.set(token,user1,3600L);
+        loginUser.setToken(token);
+        loginUser.setLogin(true);
+        return loginUser;
+    }
 }

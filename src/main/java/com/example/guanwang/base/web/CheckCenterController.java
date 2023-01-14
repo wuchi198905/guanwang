@@ -1,11 +1,13 @@
 package com.example.guanwang.base.web;
 
 
+import io.swagger.annotations.Api;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
 import java.io.IOException;
 
+@Api(description = "Websocket请求接口")
 @RestController
 @RequestMapping("/checkcenter")
 public class CheckCenterController {
