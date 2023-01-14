@@ -74,8 +74,7 @@ public class UserInfoController {
         UserInfo memberInfo=new UserInfo();
         memberInfo.setPassword(password);
         memberInfo.setUsername(username);
-        LoginUser loginUser=new LoginUser();
-        loginUser = userInfoService.login(memberInfo);
+        LoginUser loginUser = userInfoService.login(memberInfo);
         redisUtils.remove(token);
         if(loginUser.isLogin()){
             return Result.Result(RC.SUCCESS,loginUser.getToken());

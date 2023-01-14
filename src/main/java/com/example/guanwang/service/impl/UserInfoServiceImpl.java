@@ -32,27 +32,18 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     private RedisUtils redisUtils;
     @Override
     public LoginUser login(UserInfo user) {
+        LoginUser loginUser=new LoginUser();
         Map<String, Object> map = new HashMap<>();
         map.put("username", user.getUsername());
-
-
-        UserInfo user1 = null;
-        LoginUser loginUser=new LoginUser();
+        List<UserInfo>list=userInfoMapper.selectByMap(map);
+        UserInfo user1=null;
+        if(list.size()>0){
+             user1 = list.get(0);
+        }else {
+            loginUser.setLogin(false);
+            return loginUser;
+        }
         try {
-
-            List<UserInfo> userList = userInfoMapper.selectByMap(map);
-            if (userList == null || userList.size() <= 0){
-                loginUser.setLogin(false);
-                return loginUser;
-            }
-
-            if (StringUtils.equals(user.getState(), "L"))
-                if (userList == null || userList.size() <= 0){
-                    loginUser.setLogin(false);
-                    return loginUser;
-                }
-
-            user1=userList.get(0);
             // 校验用户名密码
             String encrypt = MD5.toMD5(user.getPassword() + user.getSalt());
             if (!StringUtils.equalsIgnoreCase(encrypt, user.getPassword())) {
